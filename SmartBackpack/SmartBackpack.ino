@@ -137,31 +137,10 @@ SoftwareSerial BTserial(PIN_BLUETOOTH_RX, PIN_BLUETOOTH_TX); // RX | TX // would
 //MQ2 mq2(PIN_MQ2);
 //MQ135 mq135_sensor = MQ135(PIN_MQ135);
 
-// Nokia's display connection scheme:
-// GND   - to ground
-// LIGHT - to ground if LCD backlight is needed
-// VCC   - to 5V
-// CLK   - to pin 8 - Serial clock out (SCLK)
-// DIN   - to pin 7 - Serial data out (DIN)
-// DC    - to pin 6 - Data/Command select (D/C)
-// CE    - to pin 5 - LCD chip select (CS)
-// RST   - to pin 4 - LCD reset (RST)
-//Adafruit_PCD8544 display = Adafruit_PCD8544(8, 7, 6, 5, 4);
-
-
-
 // PRIMITIVE VARIABLES
 
 boolean blinkLED = true;
 boolean isButtonPressed = true;
-
-
-// MEASUREMENTS
-
-//float dht22_humidity, dht22_temperature, dht22_heatIndex;
-//float mq2_lpg, mq2_co, mq2_smoke;
-//int mq7_co, mq3_alcohol;
-//float mq135_co2_corrected;
 
 //Tilt sensors
 #define TILTOK 0
@@ -249,9 +228,6 @@ void loop() {
   //Control LEDS an BUZZ
   //******************************************
   
-    //Serial.print(Tilt1Stat, DEC); 
-    //Serial.print(Tilt2Stat, DEC); 
-    //Serial.print(TILTSTAT, DEC); 
   if (Tilt1Stat ^ Tilt2Stat){ //sensors status not equal
     If (TiltCnt >= TILT_ALARM_CNT) {
       BuzzBlink(100);
