@@ -1,31 +1,15 @@
 /*
-   Air Sensor
-   Arduino based air quality sensor
+   Smart backpack project's firmware for Arduino based sensors management
 
 
    Sensors used:
-   DHT22 - temperature and humidity sensor
-   MQ-2 - gas leakage detector. It is suitable for detecting H2, LPG, CH4, CO, Alcohol, Smoke or Propane
-   MQ-3 - alcohol sensor is suitable for detecting alcohol concentration on your breath, just like your common breathalyzer. It has a high sensitivity and fast response time
-   MQ-7 - Carbon Monoxide (CO) sensor
-   MQ-135 - detects NH3, NOx, alcohol, benzene, smoke, CO2
-   Photosensor - LDR photoresistor
 
-   Created at 25th November 2016
-   by Vilius Kraujutis
+   Created at 4th of March 2017
+   by Vilius Kraujutis, Justas Riabovas, Povilas Brazys, Mindaugas Varkalys, Gražina Bočkutė et al.
 
    # Library dependencies
-   This project depends on these libraries, which needs to be imported into Arduino IDE:
-    - DHT22 - https://github.com/adafruit/DHT-sensor-library
-    - MQ2 - https://github.com/ViliusKraujutis/MQ-2-sensor-library
-    - MQ135 - https://github.com/ViliusKraujutis/MQ135/
-    - Adafruit GFX - https://github.com/adafruit/Adafruit-GFX-Library
-    - Nokia 5110 screen (PCD8544) - https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library
-    - Adafruit Sensor - https://github.com/adafruit/Adafruit_Sensor
 
    # HC-05 BLUETOOTH
-
-    Pairing password is 54321
 
     If you want to use AT COMMANDS to configure HC-05 bluetooth module,
     you need to change BLUETOOTH_USE_AT_COMMANDS constant to true.
@@ -49,43 +33,13 @@
         AT+ORGL : Restore factory settings
         AT+PSWD: see default password
 
-
-
    # CONNECTION Scheme
 
    See PINS section below to see what actual constants mean
 
-
-   ## Nokia's display connection scheme:
-      - GND   - to ground pin
-      - LIGHT - to ground pin, if LCD backlight is needed
-      - VCC   - to 5V pin
-      - CLK   - to pin 8 - Serial clock out (SCLK)
-      - DIN   - to pin 7 - Serial data out (DIN)
-      - DC    - to pin 6 - Data/Command select (D/C)
-      - CE    - to pin 5 - LCD chip select (CS)
-      - RST   - to pin 4 - LCD reset (RST)
-
-
    ## BLUETOOTH
       - Connect the HC-05 TX to Arduino pin PIN_BLUETOOTH_RX.
       - Connect the HC-05 RX to Arduino pin PIN_BLUETOOTH_TX through a voltage divider.
-
-   ## HEART BEAT LED
-      - Connect anode to PIN_HEART_BEAT_LED.
-      - Connect cathode to GROUND
-
-   ## DHT22 - HUMIDITY AND TEMPERATURE
-      - Connect pin 1 (on the left) of the sensor to +5V
-        NOTE: If using a board with 3.3V logic like an Arduino Due connect pin 1
-        to 3.3V instead of 5V!
-      - Connect pin 2 of the sensor to whatever your PIN_DHT is
-      - Connect pin 4 (on the right) of the sensor to GROUND
-      - Connect a 10K resistor from pin 2 (data) to pin 1 (power) of the sensor
-
-   ## MQ135 - GAS SENSOR
-      - Connect to PIN_MQ135
-      - detecting of NH3, NOx, alcohol, Benzene, smoke, CO2, etc
 */
 
 
@@ -106,36 +60,18 @@
 #define LED1 9
 #define LED2 10
 #define LIGHT A0
-//#define PIN_DHT       A5 // Temperature & humidity
-//#define PIN_MQ2       A4 // LPG
-//#define PIN_MQ7       A1 // CO
-//#define PIN_MQ3       A3 // Alcohol
-//#define PIN_MQ135     A2 // CO2
 
 // INCLUDES
 
 #include <SoftwareSerial.h>
-//#include "DHT.h"
-//#include <MQ2.h>
-//#include "MQ135.h"
-//#include <SPI.h>
-//#include <Adafruit_GFX.h>
-//#include <Adafruit_PCD8544.h>
-
 
 // CONSTANTS
 
 #define LED_BLINK_TIME 100
-//#define CELSIUS_SYMBOL "°"
-//#define MAX_ANALOG_VALUE 1023
-
 
 // VARIABLE INITIALIZATION
 
 SoftwareSerial BTserial(PIN_BLUETOOTH_RX, PIN_BLUETOOTH_TX); // RX | TX // would be good to move to hardware RX/TX pins for better performance
-//DHT dht22(PIN_DHT, DHT22);
-//MQ2 mq2(PIN_MQ2);
-//MQ135 mq135_sensor = MQ135(PIN_MQ135);
 
 // PRIMITIVE VARIABLES
 
@@ -157,8 +93,6 @@ bool LStat;
 #define BRIGHT 1
 #define DARK  0
 
-
-
 // SETUP
 
 void setup() {
@@ -166,9 +100,6 @@ void setup() {
   Serial.println();
   Serial.println("Arduino is ready");
   Serial.println("Remember to select Both NL & CR in the serial monitor");
-
-
-
 
   // BLUETOOTH - HC-05 default serial speed for AT mode is 38400
   //BTserial.begin(38400); // for AT commands
@@ -201,8 +132,6 @@ void loop() {
     return;
   }
 
-  //Serial.print(".");
-
   //readButtonValue();
   heartBeatLED(true);
 
@@ -232,10 +161,11 @@ void loop() {
     } else TiltCnt++;
   } else { //Sensor status equal
     TiltCnt = 0; //reset
-    if (TiltStat1 == TILTFAIL
+    if (TiltStat1 == TILTFAIL) {
+    }
   }
 
-if (TILTSTAT == TILTFAIL) {
+  if (TILTSTAT == TILTFAIL) {
     LEDSOn();
   } else {
     if (LStat == DARK) LEDSBlink(100);
@@ -253,27 +183,21 @@ if (TILTSTAT == TILTFAIL) {
   //******************************************
 
   //Print status to BT
-  //if (BTserial.available()){
   BTserial.print("STAT:");
   BTserial.print(Tilt1Stat, DEC); BTserial.print(";");
   BTserial.print(Tilt2Stat, DEC); BTserial.print(";");
   BTserial.print(TILTSTAT, DEC); BTserial.print(";");
   BTserial.print(LSens, DEC); BTserial.println();
-  //}
+
 
   //Print status to terminal
-  // if (Serial.available()){
   Serial.print("STAT:");
   Serial.print(Tilt1Stat, DEC); Serial.print(";");
   Serial.print(Tilt2Stat, DEC); Serial.print(";");
   Serial.print(TILTSTAT, DEC); Serial.print(";");
   Serial.print(LSens, DEC); Serial.println();
-  //Serial.print(Reed1Stat, DEC); BTserial.print(";");
-  //BTserial.print(Reed2Stat, DEC); BTserial.println();
-  //  }
 
   //Received data
-  //SerRx = Serial.readString();
   SerRx.remove(SerRx.indexOf("\n"));
   SerRx.remove(SerRx.indexOf("\r"));
   if (SerRx == "") {
@@ -390,7 +314,5 @@ String toPercentage(float value, float maxValue) {
   float p = value / maxValue;
   return String(p * 100) + "%";
 }
-
-// READ AND PRINT FROM SENSORS
 
 
