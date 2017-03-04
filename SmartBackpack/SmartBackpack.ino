@@ -142,9 +142,6 @@ SoftwareSerial BTserial(PIN_BLUETOOTH_RX, PIN_BLUETOOTH_TX); // RX | TX // would
 boolean blinkLED = true;
 boolean isButtonPressed = true;
 
-//Tilt sensors
-#define TILTOK 0
-#define TILTFAIL 1
 //#define TILTSTAT ((Tilt1Stat == TILTFAIL) || (Tilt2Stat == TILTFAIL))
 #define TILT_ALARM_CNT  5 //Counter of invalid values to start alarm
 bool Tilt1Stat, Tilt2Stat, Reed1Stat, Reed2Stat;
@@ -170,7 +167,7 @@ void setup() {
   Serial.println("Arduino is ready");
   Serial.println("Remember to select Both NL & CR in the serial monitor");
 
-  
+
 
 
   // BLUETOOTH - HC-05 default serial speed for AT mode is 38400
@@ -184,7 +181,7 @@ void setup() {
   pinMode(REED2, INPUT_PULLUP);
   pinMode(PIN_HEART_BEAT_LED, OUTPUT);
   pinMode(PIN_BUTTON, INPUT_PULLUP);
-  
+
   pinMode(BUZZ, OUTPUT);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -205,7 +202,7 @@ void loop() {
   }
 
   //Serial.print(".");
-  
+
   //readButtonValue();
   heartBeatLED(true);
 
@@ -225,10 +222,10 @@ void loop() {
   Reed2Stat = digitalRead(REED2);
 
   //******************************************
-  //Control LEDS an BUZZ
+  // Control LEDS an BUZZ
   //******************************************
-  
-  if (Tilt1Stat ^ Tilt2Stat){ //sensors status not equal
+
+  if (Tilt1Stat ^ Tilt2Stat) { //sensors status not equal
     If (TiltCnt >= TILT_ALARM_CNT) {
       BuzzBlink(100);
       LEDSOn();
@@ -237,49 +234,49 @@ void loop() {
     TiltCnt = 0; //reset
     if (TiltStat1 == TILTFAIL
   }
-  
-  if (TILTSTAT == TILTFAIL){
+
+if (TILTSTAT == TILTFAIL) {
     LEDSOn();
   } else {
     if (LStat == DARK) LEDSBlink(100);
     else LEDSOff();
   }
 
-  if ((TILTSTAT == TILTFAIL) && (Tilt1Stat != Tilt2Stat)){
+  if ((TILTSTAT == TILTFAIL) && (Tilt1Stat != Tilt2Stat)) {
     BuzzBlink(100);
   } else {
     BuzzOff();
   }
-  
+
   //******************************************
   //Terminal
   //******************************************
-  
+
   //Print status to BT
   //if (BTserial.available()){
-    BTserial.print("STAT:"); 
-    BTserial.print(Tilt1Stat, DEC); BTserial.print(";"); 
-    BTserial.print(Tilt2Stat, DEC); BTserial.print(";"); 
-    BTserial.print(TILTSTAT, DEC); BTserial.print(";"); 
-    BTserial.print(LSens, DEC); BTserial.println(); 
+  BTserial.print("STAT:");
+  BTserial.print(Tilt1Stat, DEC); BTserial.print(";");
+  BTserial.print(Tilt2Stat, DEC); BTserial.print(";");
+  BTserial.print(TILTSTAT, DEC); BTserial.print(";");
+  BTserial.print(LSens, DEC); BTserial.println();
   //}
 
   //Print status to terminal
- // if (Serial.available()){
-    Serial.print("STAT:"); 
-    Serial.print(Tilt1Stat, DEC); Serial.print(";"); 
-    Serial.print(Tilt2Stat, DEC); Serial.print(";"); 
-    Serial.print(TILTSTAT, DEC); Serial.print(";"); 
-    Serial.print(LSens, DEC); Serial.println(); 
-    //Serial.print(Reed1Stat, DEC); BTserial.print(";"); 
-    //BTserial.print(Reed2Stat, DEC); BTserial.println();
- //  }
+  // if (Serial.available()){
+  Serial.print("STAT:");
+  Serial.print(Tilt1Stat, DEC); Serial.print(";");
+  Serial.print(Tilt2Stat, DEC); Serial.print(";");
+  Serial.print(TILTSTAT, DEC); Serial.print(";");
+  Serial.print(LSens, DEC); Serial.println();
+  //Serial.print(Reed1Stat, DEC); BTserial.print(";");
+  //BTserial.print(Reed2Stat, DEC); BTserial.println();
+  //  }
 
   //Received data
   //SerRx = Serial.readString();
   SerRx.remove(SerRx.indexOf("\n"));
   SerRx.remove(SerRx.indexOf("\r"));
-  if (SerRx == ""){
+  if (SerRx == "") {
     SerRx = BTserial.readString();
     SerRx.remove(SerRx.indexOf("\n"));
     SerRx.remove(SerRx.indexOf("\r"));
@@ -295,24 +292,24 @@ void loop() {
 
   heartBeatLED(false);
   //Serial.println(LSens, DEC);
- //recvOneChar();
- //showNewData();
+  //recvOneChar();
+  //showNewData();
 }
 
 char receivedChar;
 boolean newData = false;
 
-void LEDSOn(){
+void LEDSOn() {
   digitalWrite(LED1, HIGH);
   digitalWrite(LED2, HIGH);
 }
 
-void LEDSOff(){
+void LEDSOff() {
   digitalWrite(LED1, LOW);
   digitalWrite(LED2, LOW);
 }
 
-void LEDSBlink(int del){
+void LEDSBlink(int del) {
   digitalWrite(LED1, HIGH);
   delay(del);
   digitalWrite(LED1, LOW);
@@ -322,32 +319,32 @@ void LEDSBlink(int del){
 }
 
 
-void BuzzOn(){
+void BuzzOn() {
   digitalWrite(BUZZ, HIGH);
 }
 
-void BuzzOff(){
+void BuzzOff() {
   digitalWrite(BUZZ, LOW);
 }
-void BuzzBlink(int del){
+void BuzzBlink(int del) {
   digitalWrite(BUZZ, HIGH);
   delay(del);
   digitalWrite(BUZZ, LOW);
 }
 
 void recvOneChar() {
- if (BTserial.available() > 0) {
- receivedChar = BTserial.read();
- newData = true;
- }
+  if (BTserial.available() > 0) {
+    receivedChar = BTserial.read();
+    newData = true;
+  }
 }
 
 void showNewData() {
- if (newData == true) {
- Serial.print("This just in ... ");
- Serial.println(receivedChar);
- newData = false;
- }
+  if (newData == true) {
+    Serial.print("This just in ... ");
+    Serial.println(receivedChar);
+    newData = false;
+  }
 }
 
 
@@ -377,8 +374,8 @@ String readFromBTserial() {
   String rx;
   // Keep reading from HC-05 and send to Arduino Serial Monitor
   if (BTserial.available()) {
-     rx = BTserial.read();
-     return rx;
+    rx = BTserial.read();
+    return rx;
   }
 }
 
