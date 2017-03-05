@@ -83,6 +83,7 @@ boolean isButtonPressed = true;
 #define TILTFAIL 1
 #define TILT_ALARM_CNT  5 //Counter of invalid values to start alarm
 bool Tilt1Stat, Tilt2Stat, Reed1Stat, Reed2Stat, TiltStat;
+long Tilt1Cnt, Tilt2Cnt, TiltOkCnt; 
 int TiltCnt = 0;
 
 //Serial
@@ -158,6 +159,11 @@ void loop() {
 
   TiltStat = TILTOK;
   if (Tilt1Stat ^ Tilt2Stat) { //sensors status not equal
+    //inceremnt failed counters
+    if (Tilt1Stat == TILTOK) Tilt1Cnt++;
+    else Tilt2Cnt++;
+
+    //Wait for n failed times
     if (TiltCnt >= TILT_ALARM_CNT) {
       BuzzBlink(100);
       LEDSOn();
@@ -167,10 +173,11 @@ void loop() {
       if (LStat == DARK) LEDSBlink(100); //Blink in the dark
     }
   } else { //Sensor status equal
-    TiltCnt = 0; //reset
-    if (Tilt1Stat == TILTFAIL) { //Both sensors in not tilted
+    TiltCnt = 0; //reset failed couter
+    TiltOkCnt ++; //increment OK counter
+    if (Tilt1Stat == TILTFAIL) { //Both sensors in not tilted, standby
       LEDSOff();
-    } else { //Both sensors tilted
+    } else { //Both sensors tilted, operating mode
       if (LStat == DARK) LEDSBlink(100); //Blink in the dark
       else LEDSOff();
     }
@@ -186,7 +193,10 @@ void loop() {
   BTserial.print(Tilt1Stat, DEC); BTserial.print(";");
   BTserial.print(Tilt2Stat, DEC); BTserial.print(";");
   BTserial.print(TiltStat, DEC); BTserial.print(";");
-  BTserial.print(LSens, DEC); BTserial.println();
+  BTserial.print(LSens, DEC); BTserial.print(";");
+  BTserial.print(Tilt1Cnt, DEC); BTserial.print(";");
+  BTserial.print(Tilt2Cnt, DEC); BTserial.print(";");
+  BTserial.print(TiltOkCnt, DEC); BTserial.println();
   //}
 
   //Print status to terminal
@@ -195,33 +205,33 @@ void loop() {
   Serial.print(Tilt1Stat, DEC); Serial.print(";");
   Serial.print(Tilt2Stat, DEC); Serial.print(";");
   Serial.print(TiltStat, DEC); Serial.print(";");
-  Serial.print(LSens, DEC); Serial.println();
-  //Serial.print(Reed1Stat, DEC); BTserial.print(";");
-  //BTserial.print(Reed2Stat, DEC); BTserial.println();
+  Serial.print(LSens, DEC); Serial.print(";");
+  Serial.print(Tilt1Cnt, DEC); Serial.print(";");
+  Serial.print(Tilt2Cnt, DEC); Serial.print(";");
+  Serial.print(TiltOkCnt, DEC); Serial.println();
   //  }
 
   //Receive data firstly from terminal, then, if no data reveived, from BT
+  //do not read commands from COM (commented out)
   //SerRx = Serial.readString();
-  SerRx.remove(SerRx.indexOf("\n"));
-  SerRx.remove(SerRx.indexOf("\r"));
-  if (SerRx == "") {
+  //SerRx.remove(SerRx.indexOf("\n"));
+  //SerRx.remove(SerRx.indexOf("\r"));
+  if (SerRx == "") { //Get command from bluetooth if no command from COM port is received
     SerRx = BTserial.readString();
     SerRx.remove(SerRx.indexOf("\n"));
     SerRx.remove(SerRx.indexOf("\r"));
   }
 
-  //Process data
+  //Process datav received command
   if (SerRx == "BUZZ:ON") digitalWrite(BUZZ, HIGH);
   if (SerRx == "BUZZ:OFF") digitalWrite(BUZZ, LOW);
   if (SerRx == "LED1:ON") digitalWrite(LED1, HIGH);
   if (SerRx == "LED1:OFF") digitalWrite(LED1, LOW);
   if (SerRx == "LED2:ON") digitalWrite(LED2, HIGH);
   if (SerRx == "LED2:OFF") digitalWrite(LED2, LOW);
+  SerRx = "";
 
   heartBeatLED(false);
-  //Serial.println(LSens, DEC);
-  //recvOneChar();
-  //showNewData();
 }
 
 char receivedChar;
