@@ -79,8 +79,10 @@ boolean blinkLED = true;
 boolean isButtonPressed = true;
 
 //#define TILTSTAT ((Tilt1Stat == TILTFAIL) || (Tilt2Stat == TILTFAIL))
+#define TILTOK  0
+#define TILTFAIL 1
 #define TILT_ALARM_CNT  5 //Counter of invalid values to start alarm
-bool Tilt1Stat, Tilt2Stat, Reed1Stat, Reed2Stat;
+bool Tilt1Stat, Tilt2Stat, Reed1Stat, Reed2Stat, TiltStat;
 int TiltCnt = 0;
 
 //Serial
@@ -154,28 +156,24 @@ void loop() {
   // Control LEDS an BUZZ
   //******************************************
 
+  TiltStat = TILTOK;
   if (Tilt1Stat ^ Tilt2Stat) { //sensors status not equal
-    If (TiltCnt >= TILT_ALARM_CNT) {
+    if (TiltCnt >= TILT_ALARM_CNT) {
       BuzzBlink(100);
       LEDSOn();
-    } else TiltCnt++;
+      TiltStat = TILTFAIL;
+    } else {
+      TiltCnt++;
+      if (LStat == DARK) LEDSBlink(100); //Blink in the dark
+    }
   } else { //Sensor status equal
     TiltCnt = 0; //reset
-    if (TiltStat1 == TILTFAIL) {
+    if (Tilt1Stat == TILTFAIL) { //Both sensors in not tilted
+      LEDSOff();
+    } else { //Both sensors tilted
+      if (LStat == DARK) LEDSBlink(100); //Blink in the dark
+      else LEDSOff();
     }
-  }
-
-  if (TILTSTAT == TILTFAIL) {
-    LEDSOn();
-  } else {
-    if (LStat == DARK) LEDSBlink(100);
-    else LEDSOff();
-  }
-
-  if ((TILTSTAT == TILTFAIL) && (Tilt1Stat != Tilt2Stat)) {
-    BuzzBlink(100);
-  } else {
-    BuzzOff();
   }
 
   //******************************************
@@ -183,21 +181,27 @@ void loop() {
   //******************************************
 
   //Print status to BT
+  //if (BTserial.available()){
   BTserial.print("STAT:");
   BTserial.print(Tilt1Stat, DEC); BTserial.print(";");
   BTserial.print(Tilt2Stat, DEC); BTserial.print(";");
-  BTserial.print(TILTSTAT, DEC); BTserial.print(";");
+  BTserial.print(TiltStat, DEC); BTserial.print(";");
   BTserial.print(LSens, DEC); BTserial.println();
-
+  //}
 
   //Print status to terminal
+  // if (Serial.available()){
   Serial.print("STAT:");
   Serial.print(Tilt1Stat, DEC); Serial.print(";");
   Serial.print(Tilt2Stat, DEC); Serial.print(";");
-  Serial.print(TILTSTAT, DEC); Serial.print(";");
+  Serial.print(TiltStat, DEC); Serial.print(";");
   Serial.print(LSens, DEC); Serial.println();
+  //Serial.print(Reed1Stat, DEC); BTserial.print(";");
+  //BTserial.print(Reed2Stat, DEC); BTserial.println();
+  //  }
 
-  //Received data
+  //Receive data firstly from terminal, then, if no data reveived, from BT
+  //SerRx = Serial.readString();
   SerRx.remove(SerRx.indexOf("\n"));
   SerRx.remove(SerRx.indexOf("\r"));
   if (SerRx == "") {
@@ -314,5 +318,7 @@ String toPercentage(float value, float maxValue) {
   float p = value / maxValue;
   return String(p * 100) + "%";
 }
+
+// READ AND PRINT FROM SENSORS
 
 
