@@ -50,7 +50,6 @@
 #define PIN_BLUETOOTH_RX 2
 #define PIN_BLUETOOTH_TX 3
 #define PIN_HEART_BEAT_LED 13
-#define PIN_BUTTON    9
 
 #define TILT1 4
 #define TILT2 5
@@ -67,7 +66,7 @@
 
 // CONSTANTS
 
-#define LED_BLINK_TIME 100
+#define LED_BLINK_TIME 60
 
 // VARIABLE INITIALIZATION
 
@@ -83,7 +82,7 @@ boolean isButtonPressed = true;
 #define TILTFAIL 1
 #define TILT_ALARM_CNT  5 //Counter of invalid values to start alarm
 bool Tilt1Stat, Tilt2Stat, Reed1Stat, Reed2Stat, TiltStat;
-long Tilt1Cnt, Tilt2Cnt, TiltOkCnt; 
+long Tilt1Cnt, Tilt2Cnt, TiltOkCnt;
 int TiltCnt = 0;
 
 //Serial
@@ -114,7 +113,6 @@ void setup() {
   pinMode(REED1, INPUT_PULLUP);
   pinMode(REED2, INPUT_PULLUP);
   pinMode(PIN_HEART_BEAT_LED, OUTPUT);
-  pinMode(PIN_BUTTON, INPUT_PULLUP);
 
   pinMode(BUZZ, OUTPUT);
   pinMode(LED1, OUTPUT);
@@ -165,7 +163,7 @@ void loop() {
 
     //Wait for n failed times
     if (TiltCnt >= TILT_ALARM_CNT) {
-      BuzzBlink(100);
+      BuzzBlink(50);
       LEDSOn();
       TiltStat = TILTFAIL;
     } else {
@@ -217,7 +215,7 @@ void loop() {
   //SerRx.remove(SerRx.indexOf("\n"));
   //SerRx.remove(SerRx.indexOf("\r"));
   if (SerRx == "") { //Get command from bluetooth if no command from COM port is received
-    SerRx = BTserial.readString();
+//    SerRx = BTserial.readString(); // long operation!!!
     SerRx.remove(SerRx.indexOf("\n"));
     SerRx.remove(SerRx.indexOf("\r"));
   }
@@ -287,17 +285,6 @@ void showNewData() {
 
 
 // MAIN METHODS
-
-void readButtonValue() {
-  if (digitalRead(PIN_BUTTON) == LOW) {
-    isButtonPressed = true;
-  } else {
-    if (isButtonPressed) {
-      blinkLED = !blinkLED;
-    }
-    isButtonPressed = false;
-  }
-}
 
 void heartBeatLED(boolean light) {
   if (light && !blinkLED || isButtonPressed) {
