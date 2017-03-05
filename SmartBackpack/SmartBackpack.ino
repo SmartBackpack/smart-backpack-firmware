@@ -91,7 +91,7 @@ String SerRx, BtRx;
 //Light sensor
 volatile int LSens = 0;
 bool LStat;
-#define DARK_THRESH 50 //light sensor
+#define DARK_THRESH 70 //light sensor. Daylight = ~10; Hidden with finger = ~90
 #define BRIGHT 1
 #define DARK  0
 
